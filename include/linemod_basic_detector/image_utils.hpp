@@ -13,7 +13,7 @@
 // limitations under the License.
 
 // TODO: this file is duplicated in multiple places. See also:
-//   ros2/demos/intra_process_demo/image_pipeline/common.hpp
+//   ros2/demos/image_pipeline/common.hpp
 //   ros2/demos/image_tools/src/showimage.cpp
 
 #ifndef IMAGE_PIPELINE__COMMON_HPP_
