@@ -32,6 +32,7 @@
 #include "tf2_geometry_msgs/tf2_geometry_msgs.h"
 
 #include "sensor_msgs/msg/image.hpp"
+#include <sensor_msgs/image_encodings.hpp>
 
 #include "vision_msgs/msg/detection3_d.hpp"
 #include "vision_msgs/msg/detection3_d_array.hpp"
@@ -57,7 +58,7 @@ public:
     // cv::namedWindow("depth");
     auto qos = rmw_qos_profile_sensor_data;
     // Create a publisher on the input topic.
-    pub_ = this->create_publisher<sensor_msgs::msg::Image>(output_image, qos);
+    auto pub_ = this->create_publisher<sensor_msgs::msg::Image>(output_image, qos);
     detections_pub_ =
         this->create_publisher<vision_msgs::msg::Detection3DArray>(
           output_detections,
@@ -69,14 +70,14 @@ public:
     sub_color_ = this->create_subscription<sensor_msgs::msg::Image>(
         input, [&](sensor_msgs::msg::Image::SharedPtr msg)
     {
-      color_image_ = msg;
+      color_msg_ = msg;
 
       // Make a Mat so we can convert color space for this image, but do not
       // store the Mat to avoid memory corruption
       cv::Mat color(
-        color_image_->height, color_image_->width,
-        encoding2mat_type(color_image_->encoding),
-        color_image_->data.data());
+        color_msg_->height, color_msg_->width,
+        linemod::encoding2mat_type(color_msg_->encoding),
+        color_msg_->data.data());
       if(!color.empty()) {
         cv::cvtColor(color, color, CV_BGR2RGB);
       }
@@ -85,35 +86,42 @@ public:
     sub_depth_ = this->create_subscription<sensor_msgs::msg::Image>(
         depth_input, [&](sensor_msgs::msg::Image::SharedPtr msg)
     {
-      std::cout << "got depth image" << std::endl;
+      // std::cout << "got depth image" << std::endl;
       // Create a cv::Mat from the image message (without copying).
-      cv::Mat cv_mat(
+      cv::Mat depth_mat(
         msg->height, msg->width,
-        encoding2mat_type(msg->encoding),
+        linemod::encoding2mat_type(msg->encoding),
         msg->data.data());
 
-      frame_depth_ = cv_mat;
+      depth = depth_mat;
 
-      if (color_image_ != NULL)
+      if (color_msg_ != NULL)
       {
         // Create a Mat once depth and color are both acquired.
         cv::Mat color(
-          color_image_->height, color_image_->width,
-          encoding2mat_type(color_image_->encoding),
-          color_image_->data.data());
+          color_msg_->height, color_msg_->width,
+          linemod::encoding2mat_type(color_msg_->encoding),
+          color_msg_->data.data());
 
         cv::Mat display;
 
-        if (frame_depth_.depth() == CV_32F)
+        if (depth.depth() == CV_32F)
         {
           float scale = 1000;
           // float scale = 1;
-          frame_depth_.convertTo(frame_depth_, CV_16UC1, scale);
+          depth.convertTo(depth, CV_16UC1, scale);
         }
 
-        if(frame_depth_.data != NULL)
+        // if (msg->encoding == sensor_msgs::image_encodings::TYPE_32FC1) {
+        //   depth.convertTo(depth, CV_16UC1, 1000.f);
+        // } else if(msg->encoding != sensor_msgs::image_encodings::TYPE_16UC1) {
+        //   fprintf(stderr, "Depth image has unsupported encoding [%s]\n", msg->encoding.c_str());
+        //   return;
+        // }
+
+        if(depth.data != NULL)
         {
-          auto detections = linemod.detect(color, frame_depth_, display);
+          auto detections = linemod.detect(color, depth, display);
 
           // convert the list of LinemodDetections to something that can be
           // published - namely, a Detection3DArray from vision_msgs.
@@ -121,9 +129,7 @@ public:
           if(detections.size() > 0)
           {
             vision_msgs::msg::Detection3DArray detections_msg;
-            // TODO make this and other frame ids match whatever comes on the
-            // input cloud.
-            detections_msg.header.frame_id = "openni_depth_optical_frame";
+            detections_msg.header.frame_id = msg->header.frame_id;
             detections_msg.header.stamp = rclcpp::Time::now();
 
             for(auto it = detections.begin(); it != detections.end(); ++it)
@@ -141,7 +147,7 @@ public:
               if(!any_nans)
               {
                 vision_msgs::msg::Detection3D detection;
-                detection.header.frame_id = "openni_depth_optical_frame";
+                detection.header.frame_id = msg->header.frame_id;
                 detection.header.stamp = rclcpp::Time::now();
 
                 detection.source_cloud.header.frame_id = "";
@@ -202,13 +208,13 @@ public:
                 // std::cout << "added detection to detection list" << std::endl;
               }
             }
-            std::cout << "publishing detections" << std::endl;
+            // std::cout << "publishing detections" << std::endl;
             detections_pub_->publish(detections_msg);
           }
-          std::cout << "------------------------------------------------------"
-                    << std::endl;
+          // std::cout << "------------------------------------------------------"
+          //           << std::endl;
           cv::imshow("detection", display);
-          // cv::imshow("depth", frame_depth_);
+          // cv::imshow("depth", depth);
           cv::waitKey(1);
         }
       }
@@ -217,15 +223,15 @@ public:
   }
 
 private:
-  rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr pub_;
+  // rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr pub_;
   rclcpp::Publisher<vision_msgs::msg::Detection3DArray>::SharedPtr
       detections_pub_;
   rclcpp::Subscription<sensor_msgs::msg::Image>::SharedPtr sub_color_;
   rclcpp::Subscription<sensor_msgs::msg::Image>::SharedPtr sub_depth_;
   cv::VideoCapture cap_;
   Linemod linemod;
-  sensor_msgs::msg::Image::SharedPtr color_image_;
-  cv::Mat frame_depth_;
+  sensor_msgs::msg::Image::SharedPtr color_msg_;
+  cv::Mat depth;
 };
 
 #endif

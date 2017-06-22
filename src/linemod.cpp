@@ -155,8 +155,8 @@ std::vector<LinemodDetection> Linemod::detect(cv::Mat& color_in,
                                               cv::Mat& display)
 {
   int num_modalities = detector_.getModalities().size();
-  std::cout << "performing linemod with " << num_modalities
-            << " modalities..." << std::endl;
+  // std::cout << "performing linemod with " << num_modalities
+  //           << " modalities..." << std::endl;
 
   std::vector<cv::Mat> sources;
   if(use_rgb_)
@@ -221,12 +221,12 @@ std::vector<LinemodDetection> Linemod::detect(cv::Mat& color_in,
 
       if (show_match_result)
       {
-        std::cout << "Similarity: " << m.similarity << ", x: " << m.x << ", y: "
-                  << m.y << ", class: " << m.class_id.c_str() << ", template: "
-                  << m.template_id << std::endl;
+        // std::cout << "Similarity: " << m.similarity << ", x: " << m.x << ", y: "
+        //           << m.y << ", class: " << m.class_id.c_str() << ", template: "
+        //           << m.template_id << std::endl;
 
         float distance = distances.at(m.class_id).at(m.template_id);
-        std::cout << "distance " << distance << std::endl;
+        // std::cout << "distance " << distance << std::endl;
 
       }
       LinemodDetection ld;
@@ -247,8 +247,8 @@ std::vector<LinemodDetection> Linemod::detect(cv::Mat& color_in,
   // cv::imshow("normals", quantized_images[1]);
   cv::waitKey(1);
 
-  std::cout << "linemod detector detection complete, found " << lds.size()
-            << "matches" << std::endl;
+  // std::cout << "linemod detector detection complete, found " << lds.size()
+  //           << "matches" << std::endl;
   return lds;
 }
 

@@ -16,8 +16,8 @@
 //   ros2/demos/image_pipeline/common.hpp
 //   ros2/demos/image_tools/src/showimage.cpp
 
-#ifndef IMAGE_PIPELINE__COMMON_HPP_
-#define IMAGE_PIPELINE__COMMON_HPP_
+#ifndef LINEMOD_BASIC_DETECTOR__IMAGE_UTILS_HPP_
+#define LINEMOD_BASIC_DETECTOR__IMAGE_UTILS_HPP_
 
 #include <chrono>
 #include <string>
@@ -25,20 +25,26 @@
 #include "opencv2/opencv.hpp"
 #include "builtin_interfaces/msg/time.hpp"
 
+// namespace to avoid collision with the intra_process_demo
+
+namespace linemod {
+
 int
 encoding2mat_type(const std::string & encoding)
 {
   if (encoding == "mono8") {
     return CV_8UC1;
-  } else if (encoding == "bgr8") {
+  } else if (encoding == "bgr8" || encoding == "rgb8") {
     return CV_8UC3;
   } else if (encoding == "mono16") {
     return CV_16SC1;
-  } else if (encoding == "rgba8") {
-    return CV_8UC4;
+  } else if (encoding == "32FC1" || encoding == "depth32") {
+    // Note: this may not be a display-friendly format!
+    return CV_32FC1;
   }
-  throw std::runtime_error("Unsupported mat type");
+  throw std::runtime_error(std::string("Unsupported encoding ").append(encoding));
 }
+
 
 std::string
 mat_type2encoding(int mat_type)
@@ -50,11 +56,16 @@ mat_type2encoding(int mat_type)
       return "bgr8";
     case CV_16SC1:
       return "mono16";
-    case CV_8UC4:
-      return "rgba8";
+    case CV_32FC1:
+      // Note: this may not be a display-friendly format!
+      return "depth32";
     default:
-      throw std::runtime_error("Unsupported encoding type");
+      std::stringstream stream;
+      stream << mat_type;
+      throw std::runtime_error(std::string("Unsupported mat type ").append(stream.str()).append("'"));
   }
+}
+
 }
 
 #endif  // IMAGE_PIPELINE__COMMON_HPP_
