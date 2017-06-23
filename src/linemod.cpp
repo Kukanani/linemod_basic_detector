@@ -39,10 +39,17 @@
 #include <cstdio>
 #include <iostream>
 #include <set>
-
-#include <opencv2/imgproc.hpp>
-#include <opencv2/videoio.hpp>
-#include <opencv2/highgui.hpp>
+#if CV_MAJOR_VERSION == 3
+  #include <opencv2/imgproc.hpp>
+  // #include <opencv2/videoio.hpp>
+  #include <opencv2/highgui.hpp>
+  namespace cv {using namespace cv::rgbd;}
+#else
+  #include <opencv2/imgproc/imgproc.hpp>
+  #include <opencv2/highgui/highgui.hpp>
+  #include <opencv2/objdetect/objdetect.hpp>
+  #include "linemod_basic_detector/rgbd/rgbd.hpp"
+#endif
 
 #include "linemod_basic_detector/linemod_icp.hpp"
 #include "linemod_basic_detector/linemod_train_virtual.hpp"
@@ -187,7 +194,7 @@ std::vector<LinemodDetection> Linemod::detect(cv::Mat& color_in,
                     570.3422241210938, 235.5, 0.0, 0.0, 1.0};
   cv::Mat K = cv::Mat(3,3,CV_32F, Kvals);
   // std::cout << "depth_in :"<< std::endl << depth_in << std::endl;
-  cv::rgbd::depthTo3d(depth_in, K, depth_m_input);
+  cv::depthTo3d(depth_in, K, depth_m_input);
   // std::cout << "depth_in :"<< std::endl << depth_m_input << std::endl;
 
   // double min;
@@ -225,7 +232,7 @@ std::vector<LinemodDetection> Linemod::detect(cv::Mat& color_in,
         //           << m.y << ", class: " << m.class_id.c_str() << ", template: "
         //           << m.template_id << std::endl;
 
-        float distance = distances.at(m.class_id).at(m.template_id);
+        // float distance = distances.at(m.class_id).at(m.template_id);
         // std::cout << "distance " << distance << std::endl;
 
       }

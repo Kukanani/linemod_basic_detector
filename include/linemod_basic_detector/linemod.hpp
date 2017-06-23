@@ -36,9 +36,18 @@
 #ifndef LINEMOD_BASIC_DETECTOR_LINEMOD_HPP_
 #define LINEMOD_BASIC_DETECTOR_LINEMOD_HPP_
 
-#include <opencv2/core.hpp>
-#include <opencv2/core/utility.hpp>
-#include <opencv2/rgbd.hpp>
+#if CV_MAJOR_VERSION == 3
+  #include <opencv2/core.hpp>
+  #include <opencv2/utility.hpp>
+#else
+  #include <opencv2/core/core.hpp>
+#endif
+#if CV_MAJOR_VERSION == 3
+  #include <opencv2/rgbd.hpp>
+  namespace cv {using namespace cv::rgbd;}
+#else
+  #include <opencv2/objdetect/objdetect.hpp>
+#endif
 
 #include <vector>
 

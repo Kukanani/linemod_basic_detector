@@ -96,14 +96,14 @@ cv::Ptr<cv::linemod::Detector> Trainer::generateLinemod(bool rgb, bool depth) {
   if(rgb)
   {
     std::cout << "using rgb as a linemod modality" << std::endl;
-    modalities.push_back(cv::makePtr<cv::linemod::ColorGradient>());
+    modalities.push_back(new cv::linemod::ColorGradient());
   }
   if(depth)
   {
     std::cout << "using depth as a linemod modality" << std::endl;
-    modalities.push_back(cv::makePtr<cv::linemod::DepthNormal>());
+    modalities.push_back(new cv::linemod::DepthNormal());
   }
-  return cv::makePtr<cv::linemod::Detector>(modalities, std::vector<int>(T_DEFAULTS, T_DEFAULTS + 2));
+  return new cv::linemod::Detector(modalities, std::vector<int>(T_DEFAULTS, T_DEFAULTS + 2));
 }
 
 void Trainer::train(std::string filename, bool use_rgb, bool use_depth)

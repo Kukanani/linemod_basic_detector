@@ -29,7 +29,11 @@ find_package(ork_renderer REQUIRED)
 
 include_directories(include)
 
-add_library(${PROJECT_NAME} SHARED src/linemod.cpp src/linemod_icp.cpp)
+add_library(${PROJECT_NAME} SHARED
+  src/linemod.cpp
+  src/linemod_icp.cpp
+  src/rgbd/depth_to_3d.cpp
+  src/rgbd/utils.cpp)
 ament_target_dependencies(${PROJECT_NAME}
   "OpenCV"
   "ork_renderer"
@@ -48,13 +52,6 @@ ament_target_dependencies(linemod_node
 )
 target_link_libraries(linemod_node ${PROJECT_NAME})
 
-add_executable(linemod_train_standalone_kinect
-  src/linemod_train_standalone_kinect.cpp)
-ament_target_dependencies(linemod_train_standalone_kinect
-  "OpenCV"
-  "Boost"
-)
-
 add_executable(linemod_train_virtual src/linemod_train_virtual.cpp)
 ament_target_dependencies(linemod_train_virtual
   "OpenCV"
@@ -68,7 +65,6 @@ target_link_libraries(linemod_train_virtual ${ork_renderer_LIBRARIES})
 install(
   TARGETS
     linemod_node
-    linemod_train_standalone_kinect
     linemod_train_virtual
     linemod_basic_detector
   RUNTIME DESTINATION bin
