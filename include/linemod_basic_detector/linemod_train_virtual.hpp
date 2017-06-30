@@ -46,20 +46,26 @@
 #include <stdio.h>
 #include <vector>
 
+#include <opencv2/core/version.hpp>
 #if CV_MAJOR_VERSION == 3
   #include <opencv2/rgbd.hpp>
   #include <opencv2/imgproc.hpp>
   #include <opencv2/core.hpp>
+  #include <opencv2/rgbd/linemod.hpp>
+  #include <opencv2/highgui.hpp>
   namespace cv {using namespace cv::rgbd;}
 #else
   #include <opencv2/imgproc/imgproc.hpp>
   #include <opencv2/objdetect/objdetect.hpp>
+  #include <opencv2/objdetect.hpp>
   #include <opencv2/core/core.hpp>
+  #include <opencv2/highgui/highgui.hpp>
 #endif
 
 #include <ork_renderer/utils.h>
 #include <ork_renderer/renderer3d.h>
-#include <opencv2/highgui/highgui.hpp>
+
+#include "linemod_basic_detector/rgbd/rgbd.hpp"
 
 class Trainer
 {

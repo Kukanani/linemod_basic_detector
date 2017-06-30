@@ -62,18 +62,20 @@ target_link_libraries(linemod_train_virtual ${ork_renderer_LIBRARIES})
 
 ################################################################################
 
+
 install(
   TARGETS
     linemod_node
     linemod_train_virtual
     linemod_basic_detector
-  RUNTIME DESTINATION bin
-  LIBRARY DESTINATION lib
-  ARCHIVE DESTINATION lib
+  RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/bin
+  LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
+  ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
 )
+
 install(
   DIRECTORY include/
-  DESTINATION include
+  DESTINATION ${CMAKE_INSTALL_PREFIX}/include
 )
 
 ################################################################################
