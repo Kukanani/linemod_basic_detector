@@ -45,7 +45,6 @@
 #else
   #include <opencv2/core/core.hpp>
   #include <opencv2/objdetect/objdetect.hpp>
-  #include <opencv2/core/utility.hpp>
 #endif
 
 #include <vector>
