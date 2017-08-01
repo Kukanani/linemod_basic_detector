@@ -41,7 +41,6 @@
 #include <set>
 #if CV_MAJOR_VERSION == 3
   #include <opencv2/imgproc.hpp>
-  // #include <opencv2/videoio.hpp>
   #include <opencv2/highgui.hpp>
   namespace cv {using namespace cv::rgbd;}
 #else
@@ -74,21 +73,10 @@ cv::linemod::Detector Linemod::readLinemod(const std::string& filename)
     cv::FileNode tps_fn = (*i)["template_pyramids"];
     cv::FileNodeIterator tps_it = tps_fn.begin(), tps_it_end = tps_fn.end();
 
-    // std::map<std::string, std::vector<cv::Mat> >::value_type T_val(class_id, cv::Mat());
-    // cv::Mat& T_ref = T_val.second;
-
-    // std::map<std::string, std::vector<cv::Mat> >::value_type R_val(class_id, cv::Mat());
-    // cv::Mat& R_ref = R_val.second;
-
-    // std::map<std::string, std::vector<float> >::value_type distance_val(class_id, float);
-    // float& distance_ref = distance_val.second;
     int expected_id = 0;
 
-    // cv::FileNode tps_fn = fn["template_pyramids"];
     for ( ; tps_it != tps_it_end; ++tps_it, ++expected_id)
     {
-      // int template_id = (*tps_it)["template_id"];
-
       cv::Mat T_new, R_new, K_new;
 
       cv::FileNodeIterator fni = (*tps_it)["T"].begin();
@@ -189,13 +177,11 @@ std::vector<LinemodDetection> Linemod::detect(cv::Mat& color_in,
   std::set<std::string> visited;
 
   cv::Mat_<cv::Vec3f> depth_m_input;
-  // TODO: this is hard-coded from the Astra camera parameters.
+  // TODO(kukanani): this is hard-coded from the Astra camera parameters.
   float Kvals[9] = {570.3422241210938, 0.0, 314.5, 0.0,
                     570.3422241210938, 235.5, 0.0, 0.0, 1.0};
   cv::Mat K = cv::Mat(3,3,CV_32F, Kvals);
-  // std::cout << "depth_in :"<< std::endl << depth_in << std::endl;
   cv::depthTo3d(depth_in, K, depth_m_input);
-  // std::cout << "depth_in :"<< std::endl << depth_m_input << std::endl;
 
   // double min;
   // double max;
@@ -228,12 +214,12 @@ std::vector<LinemodDetection> Linemod::detect(cv::Mat& color_in,
 
       if (show_match_result)
       {
-        // std::cout << "Similarity: " << m.similarity << ", x: " << m.x << ", y: "
-        //           << m.y << ", class: " << m.class_id.c_str() << ", template: "
-        //           << m.template_id << std::endl;
+        std::cout << "Similarity: " << m.similarity << ", x: " << m.x << ", y: "
+                  << m.y << ", class: " << m.class_id.c_str() << ", template: "
+                  << m.template_id << std::endl;
 
-        // float distance = distances.at(m.class_id).at(m.template_id);
-        // std::cout << "distance " << distance << std::endl;
+        float distance = distances.at(m.class_id).at(m.template_id);
+        std::cout << "distance " << distance << std::endl;
 
       }
       LinemodDetection ld;
@@ -311,15 +297,11 @@ bool Linemod::inferDepth(cv::Mat_<cv::Vec3f>& depth_m_input,
   // cv::imshow("cropped depth object from camera", depth_m_input_cropped);
   cv::Mat_<cv::Vec3f> depth_m_rendered_cropped = depth_m_rendered(rect_model);
 
-  // std::cout << "depth_m_input_cropped" << depth_m_input_cropped << std::endl;
   //initialize the translation based on the points in the observed point cloud
   cv::Vec3f T_crop = depth_m_input_cropped(depth_m_input_cropped.rows / 2.0f,
                                            depth_m_input_cropped.cols / 2.0f);
   //add the object's depth
-  // std::cout << "initial T_crop : " << T_crop << std::endl;
   T_crop(2)  += match_depth_dist;
-  // std::cout << "match_depth_dist = " << match_depth_dist << std::endl;
-  // std::cout << "after depth adj: " << T_crop << std::endl;
 
   if (!cv::checkRange(T_crop))
   {
@@ -360,16 +342,14 @@ bool Linemod::inferDepth(cv::Mat_<cv::Vec3f>& depth_m_input,
   float icp_dist_min_ = 0.05;
   if (icp_dist > icp_dist_min_)
   {
+    // ICP final distance too high
     return false;
-    // std::cerr << "icp dist too high!" << std::endl;
   }
 
   //perform a finer ICP
-  icp_dist = icpCloudToCloud(pts_real_ref_temp, pts_real_model_temp, R_real_icp,
-                             T_real_icp, px_ratio_match_inliers, 2);
-
-  // std::cout << "final R_real_icp:" << R_real_icp << std::endl;
-  // std::cout << "final T_real_icp:" << T_real_icp << std::endl;
+  icp_dist = icpCloudToCloud(pts_real_ref_temp, pts_real_model_temp,
+                             R_real_icp, T_real_icp, px_ratio_match_inliers,
+                             2);
   return true;
 }
 
@@ -384,9 +364,9 @@ void Linemod::drawResponse(const std::vector<cv::linemod::Template>& templates,
 
   for (int m = 0; m < num_modalities; ++m)
   {
-    // NOTE: Original demo recalculated max response for each feature in the TxT
-    // box around it and chose the display color based on that response. Here
-    // the display color just depends on the modality.
+    // NOTE: Original demo recalculated max response for each feature in the
+    // TxT box around it and chose the display color based on that response.
+    // Here the display color just depends on the modality.
     cv::Scalar color = COLORS[m];
 
     for (int i = 0; i < (int)templates[m].features.size(); ++i)
